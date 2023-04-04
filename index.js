@@ -1,4 +1,6 @@
-const { configureStore, bindActionCreators } = require("@reduxjs/toolkit");
+const { configureStore, bindActionCreators, combineReducers } = require("@reduxjs/toolkit");
+
+
 
 // const redux = require('redux');
 
@@ -7,7 +9,14 @@ const CAKE_ORDERED = "CAKE_ORDERED";
 
 const CAKE_RESTOCKED = "CAKE_RESTOCKED";
 
+const ICECREAM_ORDERED = "ICECREAM_ORDERED";
+
+const ICECREAM_RESTOCKED = "ICECREAM_RESTOCKED";
+
+
+
 // 1)action
+
 //action creator (simply creates an action) is a function which returns an action..
 function orderCake() {
   //action is an object that has a type property (can have more property also)
@@ -26,36 +35,95 @@ function restockCake(qty = 1) {
   };
 }
 
+
+//3)order cake action
+function orderIcecream(qty = 1) {
+  //action is an object that has a type property (can have more property also)
+  return {
+    type: ICECREAM_ORDERED,
+    payload: qty,
+  };
+}
+
+// 4) restock cake action
+function restockIcecream(qty = 1) {
+  //action is an object that has a type property (can have more property also)
+  return {
+    type: ICECREAM_RESTOCKED,
+    payload: qty
+  };
+}
+
+
+
+
+
 // 2)reducer
 // (previousState,action)=> newState
 
 //first principle of redux (the global state of your application is stored as an object inside a single store)
 
-const initialState = {
+//cake state
+const initialCakeState = {
   numOfCakes: 10,
-  anotherProperty: 0,
 };
 
-const reducer = (state = initialState, action) => {
+
+//icecream state
+const initialIceCreamState = {
+  numOfIcecreams: 10,
+};
+
+
+
+ 
+// reducer number 1 for cake
+const Cakereducer = (state = initialCakeState, action) => {
   switch (action.type) {
     case CAKE_ORDERED:
       return {
         ...state, //first create a copy of the object and then chnage only the properties that need to
         numOfCakes: state.numOfCakes - 1,
-      };
+      }
     case CAKE_RESTOCKED:
       return {
         ...state,
         numOfCakes: state.numOfCakes + action.payload,
-      };
+      }
     default:
       return state;
   }
 };
 
+// reducer number 2 for icecream
+const Icecreamreducer = (state = initialIceCreamState, action) => {
+  switch (action.type) {
+    case ICECREAM_ORDERED:
+      return {
+        ...state, //first create a copy of the object and then chnage only the properties that need to
+        numOfIcecreams: state.numOfIcecreams - action.payload,
+      }
+    case ICECREAM_RESTOCKED:
+      return {
+        ...state,
+        numOfIcecreams: state.numOfIcecreams + action.payload,
+      }
+    default:
+      return state;
+  }
+};
+
+
+
+// helper function to combine multiple reducers
+const rootReducer = combineReducers({
+  cake:Cakereducer,
+  icecream:Icecreamreducer,
+});
+
 // 3) Redux store (brings the actions and the reducers together)
 
-const store = configureStore({ reducer }); //first line of execution this is where we create our redux store accepts reducer and this inturn contains the initial state of the application
+const store = configureStore({ reducer:rootReducer }); //first line of execution this is where we create our redux store accepts reducer and this inturn contains the initial state of the application
 
 console.log("Initial state", store.getState()); //initial state log
 
@@ -76,6 +144,21 @@ store.dispatch(orderCake()); //when we dispatch the first action the reducer see
 store.dispatch(orderCake());
 store.dispatch(orderCake());
 store.dispatch(restockCake(3));
+
+store.dispatch(orderIcecream(5));
+
+store.dispatch(restockIcecream(5));
+
+
+
+
+// const actions = bindActionCreators({orderCake,restockCake},store.dispatch);    //not really necessarry
+
+// actions.orderCake();
+// actions.orderCake();
+// actions.orderCake();
+
+// actions.restockCake(3);
 
 // calling the function returned by the subscribe will unsubscribe
 unsubscribe();
